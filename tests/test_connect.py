@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 from tests.mock import MockClient
 
 
@@ -32,3 +34,24 @@ async def test_send_ic_message(test_server):
 
         # The broadcast MS packet should contain our message text at index 4
         assert args[4] == "Hello from test!"
+
+
+async def test_exception_does_not_disconnect(test_server):
+    """A server-side exception during packet handling should not kick the client."""
+    async with MockClient(test_server._test_host, test_server._test_port) as client:
+        await client.handshake()
+        await client.select_character(0)
+
+        # Find the server-side area for this client
+        server_client = next(c for c in test_server.client_manager.clients if c.id == client.player_id)
+        area = server_client.area
+
+        # Patch area.send_ic to raise, simulating a server bug
+        with patch.object(area, "send_ic", side_effect=RuntimeError("boom")):
+            await client.send_ic_message("This will crash")
+            await client.recv_all(timeout=0.2)
+
+        # Client should still be connected — send another message and get a response
+        await client.send_ooc_message("Still here?")
+        msg = await client.recv_ooc(timeout=2.0)
+        assert msg != ""

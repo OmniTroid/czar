@@ -9,7 +9,6 @@ from enum import Enum
 import asyncio
 import re
 import unicodedata
-import traceback
 import logging
 
 logger = logging.getLogger("aoprotocol")
@@ -74,9 +73,7 @@ class AOProtocol(asyncio.Protocol):
             except KeyError:
                 logger.debug("Unknown incoming message from %s: %s", ipid, msg)
             except Exception:
-                print(traceback.format_exc())
-                self.client.disconnect()
-                raise
+                logger.exception("Error processing message from %s: %s", ipid, msg)
 
     def connection_made(self, transport):
         """Called upon a new client connecting

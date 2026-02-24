@@ -123,6 +123,7 @@ class Client:
         self.following = None
         self.forced_to_follow = False
         self.edit_ambience = False
+        self.ooc_actions = True
         # If we're allowed to move or not
         self.frozen = False
         # if we're currently trying to set a song for the minigame
