@@ -1,7 +1,6 @@
 import logging
 import os
 import shutil
-import sys  # noqa: F401 - used to restore recursion limit after CzarServer init
 from pathlib import Path
 
 import pytest
@@ -49,9 +48,7 @@ async def test_server(tmp_path):
     # 5. Instantiate real server
     from server.czar import CzarServer
 
-    old_limit = sys.getrecursionlimit()
     server_instance = CzarServer()
-    sys.setrecursionlimit(old_limit)
 
     # 7. Start WebSocket server on a random port using the server's own method
     ws_server = await server_instance.serve_websocket("127.0.0.1", 0)
