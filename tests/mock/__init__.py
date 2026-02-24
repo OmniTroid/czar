@@ -1,7 +1,8 @@
-"""
-Test utilities package (renamed from `tests.testing`).
+"""Test utilities package.
 
-This package contains light-weight mock classes and helpers used by tests.
-They are intentionally minimal and only implement the surface used by
-the tests. Extend them as more scenarios are covered.
+Re-exports ``MockClient`` so tests can ``from tests.mock import MockClient``.
 """
+
+from tests.mock.mocks import MockClient
+
+__all__ = ["MockClient"]

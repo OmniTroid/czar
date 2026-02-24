@@ -81,7 +81,7 @@ class CzarServer:
             self.useGeoIp = False
 
         self.ms_client = None
-        sys.setrecursionlimit(50)
+        sys.setrecursionlimit(100)
         try:
             self.load_config()
             self.load_command_aliases()

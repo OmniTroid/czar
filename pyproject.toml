@@ -13,6 +13,7 @@ dependencies = [
     "oyaml>=1.0",
     "pystun3>=1.0.0",
     "pytest",
+    "pytest-asyncio",
     "PyYAML>=6.0.1",
     "requests>=2.31.0",
     "timeparse-plus>=1.2.0",
@@ -26,6 +27,9 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
 packages = ["server"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
 
 [tool.ruff]
 line-length = 120

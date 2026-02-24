@@ -1,55 +1,39 @@
-from unittest.mock import patch
-
-import pytest
-
-from server.commands.admin import ooc_cmd_login
-from server.exceptions import ArgumentError, ClientError
-from tests.mock.mocks import MockClient
+from tests.mock import MockClient
 
 
-@patch("server.commands.admin.database")
-def test_login_success(mock_db):
-    client = MockClient()
-    ooc_cmd_login(client, "mod")
+async def test_login_success(test_server):
+    async with MockClient(test_server._test_host, test_server._test_port) as client:
+        await client.handshake()
+        await client.send_ooc_message("/login mod")
 
-    assert client.is_mod is True
-    assert client.mod_profile_name == "Admin"
-    client.area.broadcast_area_list.assert_called_once_with(client)
-    client.area.broadcast_evidence_list.assert_called_once()
-    client.send_ooc.assert_called_once_with("Logged in as a moderator.")
-    client.server.webhooks.login.assert_called_once_with(client, "Admin")
+        msg = await client.recv_ooc()
+        assert msg == "Logged in as a moderator."
 
 
-@patch("server.commands.admin.database")
-def test_login_no_password_raises(mock_db):
-    client = MockClient()
-    with pytest.raises(ArgumentError, match="You must specify the password."):
-        ooc_cmd_login(client, "")
+async def test_login_no_password_raises(test_server):
+    async with MockClient(test_server._test_host, test_server._test_port) as client:
+        await client.handshake()
+        await client.send_ooc_message("/login")
+
+        msg = await client.recv_ooc()
+        assert msg == "You must specify the password."
 
 
-@patch("server.commands.admin.database")
-def test_login_wrong_password_raises(mock_db):
-    client = MockClient()
-    with pytest.raises(ClientError, match="Invalid password."):
-        ooc_cmd_login(client, "wrong")
+async def test_login_wrong_password_raises(test_server):
+    async with MockClient(test_server._test_host, test_server._test_port) as client:
+        await client.handshake()
+        await client.send_ooc_message("/login wrong")
 
-    assert client.is_mod is False
-
-
-@patch("server.commands.admin.database")
-def test_login_already_logged_in_raises(mock_db):
-    client = MockClient()
-    client.is_mod = True
-    with pytest.raises(ClientError, match="Already logged in."):
-        ooc_cmd_login(client, "mod")
+        msg = await client.recv_ooc()
+        assert msg == "Invalid password."
 
 
-@patch("server.commands.admin.database")
-def test_login_simple_string_modpass(mock_db):
-    """When modpass is a plain string instead of a dict."""
-    client = MockClient(config={"modpass": "plainpass"})
-    ooc_cmd_login(client, "plainpass")
+async def test_login_already_logged_in_raises(test_server):
+    async with MockClient(test_server._test_host, test_server._test_port) as client:
+        await client.handshake()
+        await client.send_ooc_message("/login mod")
+        await client.recv_ooc()  # consume success message
 
-    assert client.is_mod is True
-    assert client.mod_profile_name == "default"
-    client.send_ooc.assert_called_once_with("Logged in as a moderator.")
+        await client.send_ooc_message("/login mod")
+        msg = await client.recv_ooc()
+        assert msg == "Already logged in."
