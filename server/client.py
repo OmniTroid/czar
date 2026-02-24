@@ -12,7 +12,7 @@ import arrow
 import oyaml as yaml
 
 from server import database
-from server.constants import contains_URL, derelative, encode_ao_packet
+from server.constants import contains_URL, decode_ao_packet, derelative, encode_ao_packet
 from server.exceptions import AreaError, ClientError, ServerError
 
 if TYPE_CHECKING:
@@ -123,6 +123,7 @@ class Client:
         self.following = None
         self.forced_to_follow = False
         self.edit_ambience = False
+        self.ooc_actions = False
         # If we're allowed to move or not
         self.frozen = False
         # if we're currently trying to set a song for the minigame
@@ -161,6 +162,8 @@ class Client:
         self.broadcast_list = []
         # Whether we're viewing hub list or not in the A/M area list
         self.viewing_hub_list = False
+        # Whether to only display player-visible (linked/non-hidden) areas
+        self.available_areas_only = False
         # Whether or not the client used the /showname command
         self.used_showname_command = False
 
@@ -541,7 +544,7 @@ class Client:
             return
 
         # Decode AO packet
-        song = song.replace("<num>", "#").replace("<percent>", "%").replace("<dollar>", "$").replace("<and>", "&")
+        song = decode_ao_packet(song)
         try:
             if (
                 song == "~stop.mp3"

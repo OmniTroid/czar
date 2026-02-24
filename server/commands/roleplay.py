@@ -8,7 +8,7 @@ import pytimeparse
 import shlex
 
 from server import database
-from server.constants import TargetType
+from server.constants import TargetType, decode_ao_packet
 from server.exceptions import ClientError, ServerError, ArgumentError
 
 from . import mod_only
@@ -848,7 +848,7 @@ def ooc_cmd_demo(client, arg):
     client.last_demo_call = time.time() * 1000
     client.area.demo.clear()
 
-    desc = evidence.desc.replace("<num>", "#").replace("<and>", "&").replace("<percent>", "%").replace("<dollar>", "$")
+    desc = decode_ao_packet(evidence.desc)
     packets = desc.split("%")
     for packet in packets:
         p_args = packet.split("#")
