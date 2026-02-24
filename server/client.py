@@ -12,7 +12,7 @@ import arrow
 import oyaml as yaml
 
 from server import database
-from server.constants import contains_URL, derelative, encode_ao_packet
+from server.constants import contains_URL, decode_ao_packet, derelative, encode_ao_packet
 from server.exceptions import AreaError, ClientError, ServerError
 
 if TYPE_CHECKING:
@@ -543,7 +543,7 @@ class Client:
             return
 
         # Decode AO packet
-        song = song.replace("<num>", "#").replace("<percent>", "%").replace("<dollar>", "$").replace("<and>", "&")
+        song = decode_ao_packet(song)
         try:
             if (
                 song == "~stop.mp3"

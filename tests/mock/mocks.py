@@ -2,6 +2,8 @@ import asyncio
 
 import websockets
 
+from server.constants import decode_ao_packet
+
 
 class MockClient:
     """Async WebSocket client that speaks the AO protocol for testing.
@@ -74,7 +76,7 @@ class MockClient:
         packet, self._buffer = self._buffer.split("#%", 1)
         parts = packet.split("#")
         cmd = parts[0]
-        args = [self._unescape(a) for a in parts[1:]]
+        args = [decode_ao_packet(a) for a in parts[1:]]
         return cmd, args
 
     async def recv_until(self, target_cmd: str, timeout: float = 2.0) -> tuple[str, list[str]]:
@@ -103,10 +105,6 @@ class MockClient:
         _, args = await self.recv_until("CT", timeout=timeout)
         # CT#<server_name>#<message>#<is_server>#%
         return args[1] if len(args) > 1 else ""
-
-    @staticmethod
-    def _unescape(s: str) -> str:
-        return s.replace("<num>", "#").replace("<percent>", "%").replace("<dollar>", "$").replace("<and>", "&")
 
     # --- Handshake (full join sequence) ---
 
