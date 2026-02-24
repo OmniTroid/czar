@@ -5,7 +5,6 @@ import sys  # noqa: F401 - used to restore recursion limit after CzarServer init
 from pathlib import Path
 
 import pytest
-import websockets
 import yaml
 
 
@@ -32,7 +31,7 @@ async def test_server(tmp_path):
     with open(config_path) as f:
         config = yaml.safe_load(f)
     config["use_masterserver"] = False
-    config["use_websockets"] = False  # We start our own WS server below
+    config["use_websockets"] = False  # We call serve_websocket() directly with port 0
     if "bridgebot" in config:
         config["bridgebot"]["enabled"] = False
     with open(config_path, "w") as f:
@@ -49,14 +48,13 @@ async def test_server(tmp_path):
 
     # 5. Instantiate real server
     from server.czar import CzarServer
-    from server.network.aoprotocol_ws import new_websocket_client
 
     old_limit = sys.getrecursionlimit()
     server_instance = CzarServer()
     sys.setrecursionlimit(old_limit)
 
-    # 7. Start WebSocket server on a random port
-    ws_server = await websockets.serve(new_websocket_client(server_instance), "127.0.0.1", 0)
+    # 7. Start WebSocket server on a random port using the server's own method
+    ws_server = await server_instance.serve_websocket("127.0.0.1", 0)
     host, port = list(ws_server.sockets)[0].getsockname()[:2]
     server_instance._test_host = host
     server_instance._test_port = port
