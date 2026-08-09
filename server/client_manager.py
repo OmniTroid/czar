@@ -56,10 +56,9 @@ class ClientManager:
 
         new_client = Client(self.server, transport, user_id, database.ipid(peername))
         self.clients.add(new_client)
-        temp_ipid = new_client.ipid
-        for new_client in self.server.client_manager.clients:
-            if new_client.ipid == temp_ipid:
-                new_client.clientscon += 1
+        for c in self.clients:
+            if c.ipid == new_client.ipid:
+                c.clientscon += 1
         return new_client
 
     def remove_client(self, client: Client) -> None:

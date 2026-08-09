@@ -12,6 +12,7 @@ import server.logger
 from server import database
 from server.hub_manager import HubManager
 from server.client_manager import ClientManager
+from server.playerstateobserver import PlayerStateObserver
 from server.emotes import Emotes
 from server.discordbot import Bridgebot
 from server.exceptions import ClientError, ServerError
@@ -110,6 +111,7 @@ class CzarServer:
 
         self.medieval_parser = MedievalParser()
         self.client_manager = ClientManager(self)
+        self.player_state_observer = PlayerStateObserver(self)
         server.logger.setup_logging(debug=self.config["debug"])
 
         self.webhooks = Webhooks(self)
@@ -240,6 +242,7 @@ class CzarServer:
             if not area.dark and not area.force_sneak and not client.sneaking and not client.hidden:
                 area.broadcast_ooc(f"[{client.id}] {client.showname} has disconnected.")
             area.remove_client(client)
+        self.player_state_observer.unregister_client(client)
         self.client_manager.remove_client(client)
 
     @property
